@@ -117,7 +117,7 @@ def main(input_dir, res_dir, ckpt_path):
 
 def get_args():
     parser = ArgumentParser(description='CITY_ECC SEGMENTATION PyTorch')
-    parser.add_argument('--train_dir', type=str, help='输入路径')
+    parser.add_argument('--input_dir', type=str, help='输入路径')
     parser.add_argument('--res_dir', type=str, help='输出路径')
     parser.add_argument('--ckpt', type=str, help='模型路径')
 
@@ -127,4 +127,5 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-    main(args.train_dir, args.res_dir, args.ckpt)
+    print((args.input_dir, args.res_dir, args.ckpt))
+    main(args.input_dir, args.res_dir, args.ckpt)
