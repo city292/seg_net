@@ -14,12 +14,11 @@ import setproctitle
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from tensorboardX import SummaryWriter
 from torch.optim import SGD, Adadelta, Adam
 from torch.utils.data import DataLoader
 from tqdm import tqdm
-import zipfile
 
+# from 
 try:
     from nets import LossWrapper
 except:
@@ -27,10 +26,11 @@ except:
     sys.path.append(path)
     from nets import LossWrapper
 finally:
-    from nets import IOUMetric, get_eccnet, get_attu_net, get_enet, GetMyDeepLabv3Plus, GetMyDeepLab, get_CCNET_Model
-    from utils import ListDataSet, readlabel, readTiff
+    from nets import IOUMetric, get_eccnet, get_attu_net, get_enet, get_CCNET_Model, dofunc_patch
+    from utils import ListDataSet, readlabel, readTiff, writeTiff_proj, readTiff_proj
 
-
+    from nets import IOUMetric, get_eccnet, get_attu_net, get_enet, get_CCNET_Model, get_CCUNET
+    from nets import get_CBAM_U_Net, get_MyCCNET_Model
 
 def net_pred(NET=None):
 
@@ -71,27 +71,31 @@ torch.backends.cudnn.enabled = True
 np.set_printoptions(precision=2)
 
 
+
+
 filelst = []
-def main(input_dir, res_dir, ckpt_path):
+def main(input_dir, res_dir, ckpt_path, ext):
     if os.path.exists(res_dir):
+        print('已存在', res_dir)
+        # exit()
         shutil.rmtree(res_dir)
     os.mkdir(res_dir)
-
+    kernel = 512
+    overlap = 512-32
 
     ckpt = torch.load(ckpt_path)
+
+
+
     setproctitle.setproctitle('CITY_' + ckpt['args'].segname + '_eval')
     if ckpt['args'].segname == 'attu_net':
-        NET = get_attu_net(gpu_ids=1, num_classes=10)
+        NET = get_attu_net(gpu_ids=1, num_classes=ckpt['args'].n_class, img_ch=ckpt['args'].img_ch)
     elif ckpt['args'].segname == 'eccnet':
-        NET = get_eccnet(gpu_ids=1, num_classes=10)
+        NET = get_eccnet(gpu_ids=1, num_classes=ckpt['args'].n_class)
     elif ckpt['args'].segname == 'enet':
-        NET = get_enet(gpu_ids=1, num_classes=10)
-    elif ckpt['args'].segname == 'deeplabv3plus':
-        NET = GetMyDeepLabv3Plus(gpu_ids=1, num_classes=10)
-    elif ckpt['args'].segname == 'deeplabv3':
-        NET = GetMyDeepLab(gpu_ids=1, num_classes=10)
+        NET = get_enet(gpu_ids=1, num_classes=ckpt['args'].n_class)
     elif ckpt['args'].segname == 'ccnet':
-        NET = get_CCNET_Model(gpu_ids=1, num_classes=10)
+        NET = get_CCNET_Model(gpu_ids=1, num_classes=ckpt['args'].n_class)
 
     NET.load_state_dict(ckpt['segnet'])
 
@@ -99,33 +103,49 @@ def main(input_dir, res_dir, ckpt_path):
     with torch.no_grad():
 
         for name in tqdm(os.listdir(input_dir), disable=False):
-            if not name.endswith('.tif'):
+            print(name)
+            if not name.endswith(ext):
                 continue
-            image = readTiff(os.path.join(input_dir, name))
-            image = torch.from_numpy(image).float().div(255)
-            image = torch.unsqueeze(image, 0).cuda()
-            # pred = NET(image)
-            # if isinstance(pred, list):
-            #     pred = pred[0]
+            print(os.path.join(input_dir, name))
+            image , im_geotrans, im_proj = readTiff_proj(os.path.join(input_dir, name))
 
-            pred = ttabatch2images(image, net_pred(NET), fold=4)
+            image = image/255
+            def func(img):
+                inp = torch.from_numpy(img).cuda().float()
+                pred = NET(inp)
+                if isinstance(pred, list):
+                    pred = pred[0]
+                return pred.detach().to("cpu").numpy()
 
-            output_img = torch.squeeze(torch.argmax(pred, dim=1)).cpu().numpy() + 1
+            data = image[None].astype(np.float32)
+            n, c, h, w = data.shape
 
-            cv2.imwrite(os.path.join(res_dir, name[:-4] + '.png'), output_img)
+            pred = np.zeros([1, c, h, w], 'float32')
+            pred = dofunc_patch(data, pred, kernel, overlap, func)
+
+        
+
+            output_img = np.argmax(pred, axis=1)[0]
+
+            writeTiff_proj(output_img, output_img.shape[1], output_img.shape[0],1,im_geotrans, im_proj,os.path.join(res_dir, name[:-4] + '.tif'))
+
+
 
 
 def get_args():
     parser = ArgumentParser(description='CITY_ECC SEGMENTATION PyTorch')
-    parser.add_argument('--input_dir', type=str, help='输入路径')
-    parser.add_argument('--res_dir', type=str, help='输出路径')
-    parser.add_argument('--ckpt', type=str, help='模型路径')
-
+    parser.add_argument('--input_dir', type=str, help='输入路径', default=r'F:\deeplearning\4input\3')
+    parser.add_argument('--res_dir', type=str, help='输出路径', default=r'F:\deeplearning\5output\31')
+    parser.add_argument('--ckpt', type=str, help='模型路径', default=r'F:\deeplearning\logs\CITY_tc_attu_net_22-03-29_0\E_8.ckpt')
+    parser.add_argument('--ext', type=str, help='文件类型', default='.TIF')
     args = parser.parse_args()
     return args
 
 
 if __name__ == '__main__':
     args = get_args()
-    print((args.input_dir, args.res_dir, args.ckpt))
-    main(args.input_dir, args.res_dir, args.ckpt)
+    print((args.input_dir, args.res_dir, args.ckpt, args.ext))
+    main(args.input_dir, args.res_dir, args.ckpt, args.ext)
+
+
+

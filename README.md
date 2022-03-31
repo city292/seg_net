@@ -8,8 +8,13 @@
 
 # 开始训练
 参考 train.py中的参数设置
+
 示例
-python3 train.py --gpu 2 --segname enet --log_dir log文件路径
+python3 train.py --ngpus 2 --segname enet --log_dir log文件路径
+
+
+python3 train.py --ngpus 2
+
 
 
 # 训好了模型，如何使用

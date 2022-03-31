@@ -34,3 +34,6 @@ input = torch.randn(2, 4, 256, 256).cuda()
 net = get_CCNET_Model()
 y = net(input)
 print(y, y[0].shape)
+
+
+
