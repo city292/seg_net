@@ -252,15 +252,15 @@ class ResNet(nn.Module):
 
 
 def get_CCNET_Model(img_ch=4, gpu_ids=1, ema=False, num_classes=10):
-    net = ResNet(Bottleneck, layers=[2, 2, 2, 2], num_classes=10, criterion=None, recurrence=2, img_ch=img_ch)
+    net = ResNet(Bottleneck, layers=[2, 2, 2, 2], num_classes=10, criterion=None,recurrence=2, img_ch=img_ch)
     if ema:
         for param in net.parameters():
             param.detach_()
     return init_network(net, gpu_ids)
 
 
-def get_MyCCNET_Model(gpu_ids=1, ema=False, num_classes=10):
-    net = ResNet(Bottleneck, layers=[2, 2, 2, 2], num_classes=10, criterion=None, recurrence=1, CCModule=MyRCCAModule)
+def get_MyCCNET_Model(gpu_ids=1, ema=False, num_classes=10, img_ch=3):
+    net = ResNet(Bottleneck, layers=[2, 2, 2, 2], num_classes=10, criterion=None, img_ch=img_ch, recurrence=1, CCModule=MyRCCAModule)
     if ema:
         for param in net.parameters():
             param.detach_()

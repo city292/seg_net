@@ -509,10 +509,10 @@ class ECCNet(nn.Module):
 
     """
 
-    def __init__(self, num_classes, encoder_relu=False, decoder_relu=True, recurrence=2):
+    def __init__(self, num_classes, im_ch=3,encoder_relu=False, decoder_relu=True, recurrence=2):
         super().__init__()
 
-        self.initial_block = InitialBlock(4, 32, relu=encoder_relu)
+        self.initial_block = InitialBlock(im_ch, 32, relu=encoder_relu)
         self.recurrence = recurrence
         # Stage 1 - Encoder
         self.downsample1_0 = DownsamplingBottleneck(
@@ -599,8 +599,8 @@ class ECCNet(nn.Module):
         return [x, x_dsn]
 
 
-def get_eccnet(gpu_ids=1, ema=False, num_classes=1):
-    net = ECCNet(num_classes=num_classes, recurrence=1)
+def get_eccnet(gpu_ids=1, ema=False, num_classes=1,im_ch=3):
+    net = ECCNet(num_classes=num_classes, recurrence=1,im_ch=im_ch)
     if ema:
         for param in net.parameters():
             param.detach_()

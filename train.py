@@ -258,18 +258,18 @@ if __name__ == '__main__':
     if args.segname == 'attu_net':
         NET = get_attu_net(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
     elif args.segname == 'eccnet':
-        NET = get_eccnet(gpu_ids=args.ngpus, num_classes=args.n_class)
+        NET = get_eccnet(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
     elif args.segname == 'enet':
-        NET = get_enet(gpu_ids=args.ngpus, num_classes=args.n_class)
+        NET = get_enet(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
 
     elif args.segname == 'ccnet':
         NET = get_CCNET_Model(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
     elif args.segname == 'ccunet':
         NET = get_CCUNET(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
     elif args.segname == 'CBAMUNET':
-        NET = get_CBAM_U_Net(gpu_ids=args.ngpus, num_classes=args.n_class)
+        NET = get_CBAM_U_Net(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
     elif args.segname == 'myccnet':
-        NET = get_MyCCNET_Model(gpu_ids=args.ngpus, num_classes=args.n_class)
+        NET = get_MyCCNET_Model(gpu_ids=args.ngpus, num_classes=args.n_class, img_ch=args.img_ch)
 
     ng = torch.cuda.device_count() 
     print("Devices:%d" %ng) 

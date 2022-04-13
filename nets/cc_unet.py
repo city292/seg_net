@@ -36,8 +36,8 @@ class CCUNET(nn.Module):
         return x
 
 
-def get_CCUNET(gpu_ids=1, ema=False, num_classes=10):
-    net = CCUNET(img_ch=4, output_ch=num_classes)
+def get_CCUNET(gpu_ids=1, ema=False, num_classes=10,img_ch=3):
+    net = CCUNET(img_ch=img_ch, output_ch=num_classes)
     if ema:
         for param in net.parameters():
             param.detach_()

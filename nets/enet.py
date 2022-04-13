@@ -479,10 +479,10 @@ class ENet(nn.Module):
 
     """
 
-    def __init__(self, num_classes, encoder_relu=False, decoder_relu=True):
+    def __init__(self, num_classes, im_ch=3,encoder_relu=False, decoder_relu=True):
         super().__init__()
 
-        self.initial_block = InitialBlock(4, 32, relu=encoder_relu)
+        self.initial_block = InitialBlock(im_ch, 32, relu=encoder_relu)
 
         # Stage 1 - Encoder
         self.downsample1_0 = DownsamplingBottleneck(
@@ -631,8 +631,8 @@ class ENet(nn.Module):
         return x
 
 
-def get_enet(gpu_ids=1, ema=False, num_classes=10):
-    net = ENet(num_classes=10)
+def get_enet(gpu_ids=1, ema=False, num_classes=10, im_ch=3):
+    net = ENet(num_classes=num_classes,im_ch=im_ch)
     if ema:
         for param in net.parameters():
             param.detach_()

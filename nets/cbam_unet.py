@@ -84,8 +84,8 @@ class CBAM_U_Net(nn.Module):
         return d1
 
 
-def get_CBAM_U_Net(gpu_ids=1, ema=False, num_classes=1):
-    net = CBAM_U_Net(img_ch=4, output_ch=num_classes)
+def get_CBAM_U_Net(gpu_ids=1, ema=False, num_classes=1,img_ch=3):
+    net = CBAM_U_Net(img_ch=img_ch, output_ch=num_classes)
     if ema:
         for param in net.parameters():
             param.detach_()

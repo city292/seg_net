@@ -132,7 +132,7 @@ class Attention_block(nn.Module):
 
 
 def get_attu_net(img_ch=4, gpu_ids=1, ema=False, num_classes=1):
-    net = AttU_Net(img_ch=img_ch, output_ch=10)
+    net = AttU_Net(img_ch=img_ch, output_ch=num_classes)
     if ema:
         for param in net.parameters():
             param.detach_()
